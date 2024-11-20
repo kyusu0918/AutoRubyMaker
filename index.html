@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Ruby Maker</title>
+  <script src="./lib/react.production.min.js"></script>
+  <script src="./lib/react-dom.production.min.js"></script>
+  <script src="./lib/babel.min.js"></script>
+  <script src="./lib/kuromoji.js"></script>
+  <script src="./js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <link rel="stylesheet" href="./css/bootstrap-icons.css">
+  <link rel="icon" href="./asset/favicon.ico">
+</head>
+<body>
+
+  <!-- ルートエレメント -->
+  <div id="root"></div>
+
+  <!-- JSX Script -->
+  <script type="text/babel">
+
+  /********************************************************************************
+   * ヘッダーコンポーネント
+   *
+   * @since 2024/11/19
+   * @author Kei Yusu
+   *
+   *********************************************************************************/
+  const Header = () => {
+    // JSX作成
+    return (
+      <div class="row" style={{ borderBottom: 'solid 1px lightgray' }}>
+        <div class="col">
+          <h2 class="mt-3"><ruby>自動<rt style={{ color: 'red' }}>じどう</rt></ruby>ルビファイル作成ツール</h2>
+        </div>
+      </div>
+    );
+  };
+
+  /********************************************************************************
+   * ボディコンポーネント
+   *
+   * @since 2024/11/19
+   * @author Kei Yusu
+   *
+   *********************************************************************************/
+   const Body = () => {
+        
+    // シナリオファイル
+    const [getScenarioFile, setScenarioFile] = React.useState(undefined);
+
+    // シナリオファイル内容
+    const [getScenarioContent, setScenarioContent] = React.useState("");
+
+    // 名詞
+    const [getRubyTargetNoun, setRubyTargetNoun] = React.useState(true);
+
+    // 動詞
+    const [getRubyTargetVerb, setRubyTargetVerb] = React.useState(true);
+
+    // 形容詞
+    const [getRubyTargetAdjective, setRubyTargetAdjective] = React.useState(true);
+
+    // 副詞
+    const [getRubyTargetAdverb, setRubyTargetAdverb] = React.useState(true);
+
+    // 接到詞
+    const [getRubyTargetPrefix, setRubyTargetPrefix] = React.useState(true);
+
+    // ルビファイル形式
+    const [getRubyFileType, setRubyFileType] = React.useState("json");
+
+    // タグ付加ファイル
+    const [getIsTagFile, setIsTagFile] = React.useState(true);
+
+    // ルビファイル
+    const [getRubyFile, setRubyFile] = React.useState("");
+
+    // ルビファイル内容
+    const [getRubyContent, setRubyContent] = React.useState("");
+
+    // ルビファイル内容展開フラグ
+    const [getRubyContentOpen, setRubyContentOpen] = React.useState(false);
+    
+    // タグファイル
+    const [getTagFile, setTagFile] = React.useState("");
+
+    // タグファイル内容
+    const [getTagContent, setTagContent] = React.useState("");
+
+    // タグファイル内容展開フラグ
+    const [getTagContentOpen, setTagContentOpen] = React.useState(false);
+
+    // 漢字数
+    const [getKanjiNum, setKanjiNum] = React.useState(0);
+
+    // ルビ作成数
+    const [getRubyNum, setRubyNum] = React.useState(0);
+
+    // 作成中フラグ
+    const [getIsMaking, setIsMaking] = React.useState(false);
+
+    /********************************************************************************
+     * シナリオファイル変更イベント
+     *
+     * @param e イベント
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const dlgScenarioFile_OnChange = (e) => {
+
+      // console.log("dlgScenarioFile_OnChange");
+
+      // 選択ファイル取得
+      const files = e.currentTarget.files;
+     
+      // シナリオファイルがある場合
+      if (files){
+
+        // 先頭のファイルを取得
+        const file = files[0];
+
+        // シナリオファイルを保持
+        setScenarioFile(file);
+
+        // ファイル名と拡張子を取得
+        const {fileName, fileExt} = getFileDetails(file.name);
+
+        // ルビファイル名保持
+        setRubyFile(fileName + "_ruby_store." + getRubyFileType);
+
+        // タグファイル名保持
+        setTagFile(fileName + "_ruby_tag." + fileExt);
+
+      // シナリオファイルがない場合
+      }else{
+
+        // シナリオファイルをクリア
+        setScenarioFile(undefined);
+
+        // ルビファイルをクリア
+        setRubyFile("");
+
+        // タグファイルをクリア
+        setTagFile("");
+
+      }
+
+
+    }
+
+    /********************************************************************************
+     * ファイル名と拡張子を分割
+     *
+     * @param fileName ファイル名
+     * @returns {ファイル名, 拡張子}
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const getFileDetails = (fileName) => {
+
+      // カンマで分割
+      const fileDetails = fileName.split(".");
+
+      // リーバース
+      const reverseFileDetails = fileDetails.reverse();
+
+      // 戻り値の設定
+      return { "fileName": reverseFileDetails.slice(1), "fileExt": reverseFileDetails[0] };
+
+    }
+
+    /********************************************************************************
+     * 名詞変更イベント
+     *
+     * @param e イベント
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const chkRubyTargetNoun_OnChange = (e) => {
+
+      // console.log("chkRubyTargetNoun_OnChange", e.target.checked);
+      
+      // 名詞保持
+      setRubyTargetNoun(prev => !prev);
+
+    }
+
+    /********************************************************************************
+     * 動詞変更イベント
+     *
+     * @param e イベント
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const chkRubyTargetVerb_OnChange = (e) => {
+
+      // console.log("chkRubyTargetVerb_OnChange", e.target.checked);
+      
+      // 動詞保持
+      setRubyTargetVerb(prev => !prev);
+
+    }
+
+    /********************************************************************************
+     * 形容詞変更イベント
+     *
+     * @param e イベント
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const chkRubyTargetAdjective_OnChange = (e) => {
+
+      // console.log("chkRubyTargetAdjective_OnChange", e.target.checked);
+      
+      // 形容詞保持
+      setRubyTargetAdjective(prev => !prev);
+
+    }
+
+    /********************************************************************************
+     * 副詞変更イベント
+     *
+     * @param e イベント
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const chkRubyTargetAdverb_OnChange = (e) => {
+
+      // console.log("chkRubyTargetAdverb_OnChange", e.target.checked);
+      
+      // 副詞保持
+      setRubyTargetAdverb(prev => !prev);
+
+    }
+
+    /********************************************************************************
+     * 接到詞変更イベント
+     *
+     * @param e イベント
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const chkRubyTargetPrefix_OnChange = (e) => {
+
+      // console.log("chkRubyTargetPrefix_OnChange", e.target.checked);
+      
+      // 接到詞保持
+      setRubyTargetPrefix(prev => !prev);
+
+    }
+    
+    /********************************************************************************
+     * ルビファイル形式変更イベント
+     *
+     * @param e イベント
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const rdoRubyFileType_OnChange = (e) => {
+
+      // console.log("rdoRubyFileType_OnChange", e.target.value);
+
+      // ルビファイル形式保持
+      setRubyFileType(e.target.value);
+
+    }
+     
+    /********************************************************************************
+     * タグ付加ファイル変更イベント
+     *
+     * @param e イベント
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/     
+     const chkIsTagFile_OnChange = (e) => {
+
+      // console.log("chkIsTagFile_OnChange", e.target.checked);
+
+      // タグ付加ファイル保持
+      setIsTagFile(prev => !prev);
+
+     }
+
+    /********************************************************************************
+     * 作成ボタンクリックイベント
+     *
+     * @param e イベント
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const btnMake_OnClick = async (e) => {
+
+      // console.log("btnMake_OnClick");
+
+      // 入力バリデーション
+      if(!checkInputValue()) return;
+
+      // 作成中フラグ設定
+      setIsMaking(true);
+
+      // ルビファイル作成
+      await makeRubyFiles()
+
+      // 作成中フラグ設定
+      setIsMaking(false);
+
+    }
+
+    /********************************************************************************
+     * 入力チェック
+     *
+     * @returns true: 正常 / false: 異常
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const checkInputValue = () => {
+
+      // console.log("checkInputValue");
+
+      // シナリオファイルが選択されていない場合
+      if(!getScenarioFile){
+
+        // 警告表示
+        alert("シナリオファイルを選択してください。")
+
+        // 戻り値の設定
+        return false;
+
+      }
+
+      // 戻り値の設定
+      return true;
+
+    }
+
+    /********************************************************************************
+     * ルビファイル作成
+     *
+     * @returns true: 正常 / false: 異常
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+     const makeRubyFiles = async () => {
+
+      // console.log("checkInputValue");
+
+      try {
+
+        // ルビ用配列の初期化
+        const rubies = []
+
+        // タグ追加後のシナリオファイルの初期値を設定
+        const tags = []
+
+        // カウンタの初期化
+        let kanjiNum = 0;
+
+        // 各コンテンツの保持を初期化
+        setScenarioContent("");
+        setRubyContent("");
+        setTagContent("");
+        setKanjiNum(0);
+        setRubyNum(0);
+
+        // シナリオファイル読み込み
+        const content = await readFile(getScenarioFile);
+
+        // シナリオ内容を保持
+        setScenarioContent(content);
+
+        // トークナイザ取得
+        const tokenizer = await buildTokenizer();
+
+        // シナリオ内容を改行でスプリット
+        const lines = content.split("\n");
+
+        // 対象品詞取得
+        // ※全てチェックの場合は全ての漢字とする（品詞判断をしない）
+        const isRubyTargetFull = getRubyTargetNoun && getRubyTargetVerb && getRubyTargetAdjective && getRubyTargetAdverb && getRubyTargetPrefix;
+
+        // 読み込んだ行数文ループ
+        lines.forEach(line => {
+
+          // 前後の空白を除去
+          const stripedLine = line.trim();
+
+          // 先頭行がコメント（;）かタグ([)でない場合
+          if(stripedLine != "" && stripedLine.startsWith(";") == false && stripedLine.startsWith("[") == false){
+
+            // 行解析
+            const { tagLine, newRubies, newkanjiNum } = parseLine(tokenizer, line, isRubyTargetFull)
+
+            // タグ追加後のシナリオファイルに追加
+            tags.push(tagLine + "\n");
+
+            // ルビ追加
+            addRubies(rubies, newRubies)
+
+            // 漢字数カウンタ加算
+            kanjiNum += newkanjiNum;
+
+          // 空白行かコメント行かタグ行の場合  
+          }else{
+
+            // タグ追加後のシナリオファイルに追加
+            tags.push(line + "\n");
+
+          }
+  
+        });
+
+        // ルビファイル保持
+        setRubyContent(AdjustRubyFileType(rubies));
+        setRubyContentOpen(false);
+
+        // タグ追加後のシナリオファイルを作成する場合
+        if(getIsTagFile){
+
+          // タグファイル保持
+          setTagContent(tags.join("").trimEnd());
+          setTagContentOpen(false);
+
+        }
+
+        // カウンタ保持
+        setKanjiNum(kanjiNum);
+        setRubyNum(rubies.length);
+
+      } catch (e) {
+        
+        // console.log(e);
+
+        // 戻り値の設定
+        return false;
+
+      }
+
+      // 戻り値の設定
+      return true;
+
+    }
+
+    /********************************************************************************
+     * ファイル読み込み
+     *
+     * @param file ファイルオブジェクト
+     * @returns 読み込み内容
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const readFile = (file) => {
+
+      // console.log("readFile");
+
+      // プロミスラッピング
+      return new Promise((resolve, reject) => {
+
+        // ファイルリーダーのインスタンスを作成
+        const reader = new FileReader();
+
+        // ファイルリーダーのイベント設定
+        reader.onerror = () => reject("");
+        reader.onload = () => {
+
+          // 読み込み内容取得
+          const readContent = typeof reader.result === "string" ? reader.result : "";
+
+          // リゾルブ
+          resolve(readContent);
+          
+        }
+
+        // ファイル読み込み
+        reader.readAsText(file, 'UTF-8');
+
+      });
+
+    }
+
+    /********************************************************************************
+     * トークナイザ作成
+     *
+     * @returns トークナイザオブジェクト
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const buildTokenizer = () => {
+
+      // console.log("buildTokenizer");
+
+      // プロミスラッピング
+      return new Promise((resolve, reject) => {
+
+        // トークナイザ作成
+        kuromoji.builder({ dicPath: "./dict" }).build((err,tokenizer)=>{
+
+          // エラーの場合
+          if (err) {
+            
+            // リジェクト
+            reject(err);
+
+          // 正常な場合
+          } else {
+
+            // リゾルブ
+            resolve(tokenizer);
+
+          }
+
+        });
+
+      });
+
+    }
+
+    /********************************************************************************
+     * 行解析
+     *
+     * @param tokenizer トークナイザ
+     * @param line 行データ
+     * @param isRubyTargetFull 全漢字対象フラグ
+     * @returns {タグ追加後のシナリオ, 新規ルビ配列, 漢字数}
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const parseLine = (tokenizer, line, isRubyTargetFull) => {
+
+      // console.log("parseLine");
+
+      // 新規ルビ配列の初期化
+      const newRubies = [];
+
+      // タグ付加後の行データの初期化
+      let newLine = ""
+
+      // 漢字数カウンタの初期化
+      let kanjiNum = 0;
+
+      // 形態素解析実行
+      const tokens = tokenizer.tokenize(line);
+
+      // トークン数分ループ
+      tokens.forEach(token => {
+
+        // 単語取得
+        let word = token.surface_form;
+
+        // トークンに漢字を含んでいるかを取得
+        const isIncludeKanji = Array.prototype.some.call(token.surface_form, (c) => '\u4e00' <= c && c <= '\u9fff');
+
+        // 対象品詞取得
+        const isRubyTarget = isRubyTargetFull || isRubyTargetPos(token.pos)
+
+        // 読みがあり、対象品詞の漢字を含む場合
+        if(token.reading && isIncludeKanji && isRubyTarget){
+
+          // 漢字数カウンタのインクリメント
+          kanjiNum++;
+
+          // 読み仮名を平仮名で取得
+          const reading = token.reading.replace(/[\u30a1-\u30f6]/g, (char) => {
+          
+            // 戻り値の設定
+            return String.fromCharCode(char.charCodeAt(0) - 0x60);
+          
+          }); 
+
+          // ルビ漢字部分取得
+          const ruby = extract_kanji(reading, token.surface_form);
+
+          // ルビテキスト漢字読み部分取得
+          const text = extract_kanji(token.surface_form, reading);
+
+          // 新規ルビ情報作成
+          const newRuby = {"ruby": ruby, "text": text};
+
+          // // console.log("新規ルビ:", newRuby);
+
+          // 新規ルビ配列に追加
+          newRubies.push(newRuby);
+
+          // 単語にタグを付加
+          word = token.surface_form.replace(ruby, "[srb]" + ruby + "[erb]")
+
+        }
+
+        // タグ付加後の行データに追加
+        newLine += word;
+
+      });
+      
+      // 戻り値の設定
+      return { "tagLine": newLine, "newRubies": newRubies, "newkanjiNum": kanjiNum };
+      
+    }
+
+    /********************************************************************************
+     * 対象品詞判断
+     *
+     * @param pos 品詞
+     * @returns true: 対象 / false: 対象外
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const isRubyTargetPos = (pos) => {
+
+      // console.log("isRubyTargetPos");
+
+      // 品詞毎のチェックを判断
+      if(pos == "名詞" && getRubyTargetNoun) return true;
+      if(pos == "動詞" && getRubyTargetVerb) return true;
+      if(pos == "形容詞" && getRubyTargetAdjective) return true;
+      if(pos == "副詞" && getRubyTargetAdverb) return true;
+      if(pos == "接頭詞" && getRubyTargetPrefix) return true;
+
+      // 戻り値の設定
+      return false;
+
+    }
+
+    /********************************************************************************
+     * 漢字部分抽出
+     *
+     * @param text1 対象1
+     * @param text2 対象2
+     * @returns text2（対象2）の一致部分
+     * @see トークンが「感じる」「かんじる」などの場合、「感」「かん」部分が一致するのでこの部分を抽出します。
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+     const extract_kanji = (text1, text2) => {
+
+      // 対象の初期値を設定
+      let target = text2;
+
+      // 検索文字数分ループ
+      for(let c of text1.split("")){
+
+        // 指定文字を検索
+        const matchIndex = text2.indexOf(c);
+
+        // 見つかった場合
+        if(matchIndex >= 1){
+
+          // 戻り値の設定
+          target = text2.substr(0, matchIndex);
+
+          // 終了
+          break;
+
+        }
+
+      };
+
+      // 戻り値の設定
+      return target;
+
+    }
+
+    /********************************************************************************
+     * ルビ配列追加
+     *
+     * @param rubies 全体ルビ配列
+     * @param newRubies 行毎に抽出したルビ配列
+     * @since 2024/11/19
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+     const addRubies = (rubies, newRubies) => {
+
+      // console.log("addRubies");
+
+      // 新規追加ルビ数分ループ
+      newRubies.forEach(newIt => {
+
+        // 既存ルビ検索
+        const added = rubies.find(it => it.ruby == newIt.ruby);
+
+        // 既存ルビに存在していない場合
+        if(!added){
+
+          // 既存ルビに新規ルビを追加
+          rubies.push(newIt);
+
+        }
+
+      });
+
+    }
+
+    /********************************************************************************
+     * ルビファイル形式調整
+     *
+     * @param rubies 全体ルビ配列
+     * @return ルビファイル形式調整後の文字列
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const AdjustRubyFileType = (rubies) => {
+
+      // 戻り値の初期値を設定
+      let retVal = "";
+
+      // ルビファイル形式がJSON形式の場合
+      if(getRubyFileType == "json"){
+
+        // JSON文字列作成
+        retVal = JSON.stringify(rubies, null, 2);
+
+      // シナリオ形式の場合
+      }else if(getRubyFileType == "ks"){
+
+        // 自動ルビプラグインのルビ登録タグ形式作成
+        retVal = rubies.map(it => {
+
+          // 戻り値の設定
+          return `[arb ruby="${it.ruby}" text="${it.text}"]`;
+
+        }).join("\n");
+
+      // その他の場合（通常はありえない）
+      }else{
+
+        // 空白
+        retVal = "";
+
+      }
+
+      // 戻り値の設定
+      return retVal;
+
+    } 
+
+    /********************************************************************************
+     * ルビファイルコピーボタンクリックイベント
+     *
+     * @param e イベント
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const imgRubyContentCopy_OnClicked = (e) => {
+
+      // console.log("imgRubyContentCopy_OnClicked");
+
+      // ブラウザがクリップボードに対応していない場合は終了
+      if(!navigator.clipboard) return;
+
+      // クリップボードにコピー
+      navigator.clipboard.writeText(getRubyContent);
+
+    }
+
+    /********************************************************************************
+     * ルビファイルダウンロードボタンクリックイベント
+     *
+     * @param e イベント
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const imgRubyContentDownload_OnClicked = (e) => {
+
+      // console.log("imgRubyContentDownload_OnClicked");
+
+      // ダウンロード
+      download(getRubyContent, getRubyFile);
+
+    }
+
+    /********************************************************************************
+     * ルビファイル開くボタンクリックイベント
+     *
+     * @param e イベント
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const imgRubyContentOpen_OnClicked = (e) => {
+
+      // console.log("imgRubyContentOpen_OnClicked");
+
+      // 反転設定
+      setRubyContentOpen(prev => !prev);
+
+    }
+
+    /********************************************************************************
+     * タグファイルコピーボタンクリックイベント
+     *
+     * @param e イベント
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const imgTagContentCopy_OnClicked = (e) => {
+
+      // console.log("imgTagContentCopy_OnClicked");
+
+      // ブラウザがクリップボードに対応していない場合は終了
+      if(!navigator.clipboard) return;
+
+      // クリップボードにコピー
+      navigator.clipboard.writeText(getTagContent);
+
+    }
+
+    /********************************************************************************
+     * タグファイルダウンロードボタンクリックイベント
+     *
+     * @param e イベント
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const imgTagContentDownload_OnClicked = (e) => {
+
+      // console.log("imgTagContentDownload_OnClicked");
+
+      // ダウンロード
+      download(getTagContent, getTagFile);
+
+    }
+
+    /********************************************************************************
+     * タグファイル開くボタンクリックイベント
+     *
+     * @param e イベント
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const imgTagContentOpen_OnClicked = (e) => {
+
+      // console.log("imgTagContentOpen_OnClicked");
+
+      // 反転設定
+      setTagContentOpen(prev => !prev);
+
+    }
+
+    /********************************************************************************
+     * ダウンロード
+     *
+     * @param content 内容
+     * @param file ファイル名
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const download = (content, file) => {
+
+      // console.log("download");
+
+      // blobオブジェクトのインスタンスを作成
+      const blob = new Blob([ content ], { "type" : "text/plain" });
+
+      // ファイル名設定
+      const filename = file;
+
+      // リンク作成
+      const link = document.createElement("a");
+
+      // URL作成
+      const url = window.URL.createObjectURL(blob);
+
+      // リンクにURLを設定
+      link.href = url;
+
+      // リンクにダウンロードファイル名設定
+      link.download = filename;
+
+      // DOMにリンクを追加
+      document.body.appendChild(link);
+
+      // リンククリック
+      link.click();
+
+      // URL解放
+      window.URL.revokeObjectURL(url);
+
+      // リンク削除
+      document.body.removeChild(link);
+
+    }
+
+    // JSX作成
+    return (
+      <div>
+        <div class="row mt-3">
+          <div class="col">
+            <h2>
+              <img src="./asset/box-arrow-in-right.svg" alt="" width="42" height="42"/>
+              <span class="ms-2">入力ファイル</span>
+            </h2>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col">
+            <label for="dlgScenarioFile" class="form-label">シナリオファイル（漢字と読み仮名を抽出したいファイルを選択してください）</label>
+            <input class="form-control" type="file" id="dlgScenarioFile" accept=".ks,.txt" onChange={ dlgScenarioFile_OnChange }/>
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col">
+            <h2>
+              <img src="./asset/database-fill-gear.svg" alt="" width="42" height="42"/>
+              <span class="ms-2">作成条件</span>
+            </h2>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-2">
+            <span class="me-2">対象品詞</span>
+          </div>
+          <div class="col-10">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="chkRubyTargetNoun" onChange={ chkRubyTargetNoun_OnChange } checked = { getRubyTargetNoun }/>
+              <label class="form-check-label" for="chkRubyTargetNoun">
+                名詞
+              </label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="chkRubyTargetVerb" onChange={ chkRubyTargetVerb_OnChange } checked = { getRubyTargetVerb }/>
+              <label class="form-check-label" for="chkRubyTargetVerb">
+                動詞
+              </label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="chkRubyTargetAdjective" onChange={ chkRubyTargetAdjective_OnChange } checked = { getRubyTargetAdjective }/>
+              <label class="form-check-label" for="chkRubyTargetAdjective">
+                形容詞
+              </label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="chkRubyTargetAdverb" onChange={ chkRubyTargetAdverb_OnChange } checked = { getRubyTargetAdverb }/>
+              <label class="form-check-label" for="chkRubyTargetAdverb">
+                副詞
+              </label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="chkRubyTargetPrefix" onChange={ chkRubyTargetPrefix_OnChange } checked = { getRubyTargetPrefix }/>
+              <label class="form-check-label" for="chkRubyTargetPrefix">
+                接到詞
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-2">
+            <span class="me-2">ルビファイル形式</span>
+          </div>
+          <div class="col-10">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="rdoRubyFileType" id="rdoRubyFileTypeJson" value="json" onChange={ rdoRubyFileType_OnChange } checked = { getRubyFileType === "json" }/>
+              <label class="form-check-label" for="rdoRubyFileTypeJson">
+                JSON形式（.json）
+              </label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="rdoRubyFileType" id="rdoRubyFileTypeKs" value="ks" onChange={ rdoRubyFileType_OnChange } checked = { getRubyFileType === "ks" }/>
+              <label class="form-check-label" for="rdoRubyFileTypeKs">
+                シナリオ形式（.ks）
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-2">
+            <span class="me-2">タグ付加ファイル</span>
+          </div>
+          <div class="col-10">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="chkIsTagFile" onChange={ chkIsTagFile_OnChange } checked = { getIsTagFile }/>
+              <label class="form-check-label" for="chkIsTagFile">
+                ルビ対象に[srb]と[erb]のタグを付加したシナリオファイルを作成する
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col">
+            <button class="btn btn-primary" id="btnMake" onClick={ btnMake_OnClick }>
+              { getIsMaking
+                ? <span>
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span class="ms-1">作成中</span>
+                  </span>
+                : <span>
+                    <i class="bi bi-check2-square me-1"></i>
+                    <span>作成　</span>
+                  </span>
+              }
+              </button>
+              { getKanjiNum != 0 || getRubyNum != 0
+                ? <span>
+                    <span class="ms-2">ルビ対象数：{getKanjiNum}</span>
+                    <span class="ms-2">作成ルビ数：{getRubyNum}</span>
+                  </span>
+                : <span></span>
+              }
+          </div>
+        </div>
+
+        { getRubyContent &&
+
+          <div class="row mt-4">
+            <div class="col">
+
+              <div class="row ms-1 me-1 bg-body-tertiary" style={{ disply: 'flex', alignItems: 'center', height: '3rem', borderBottom: 'solid 1px lightgray' }}>
+                <div class="col-11">
+                  <span >ルビファイル：{ getRubyFile }</span>
+                  <span><a class="ms-2" href="#" role="button"><i class="bi bi-clipboard" title="クリップボードにコピー" onClick={ imgRubyContentCopy_OnClicked }></i></a></span>
+                  <span><a class="ms-2" href="#" role="button"><i class="bi bi-download" title="ダウンロード" onClick={ imgRubyContentDownload_OnClicked }></i></a></span>
+                </div>
+                <div class="col-1 text-end">
+                  <span>
+                    <a class="me-2" role="button" data-bs-toggle="collapse" href="#clpRubyContent" aria-controls="clpRubyContent" aria-expanded="false">
+                      { getRubyContentOpen
+                        ? <i class="bi bi-chevron-double-up" title="閉じる" onClick={ imgRubyContentOpen_OnClicked }></i>
+                        : <i class="bi bi-chevron-double-down" title="開く" onClick={ imgRubyContentOpen_OnClicked }></i>
+                      }
+                    </a>
+                  </span>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col">
+                  <div class="collapse" id="clpRubyContent">
+                    <div class="ms-1 me-1 bg-body-tertiary" style={{ whiteSpace: 'pre-wrap' }}>
+                      { getRubyContent }
+                    </div>
+                  </div>                  
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        }
+
+        { getTagContent &&
+
+          <div class="row mt-2">
+            <div class="col">
+
+              <div class="row ms-1 me-1 bg-body-tertiary" style={{ disply: 'flex', alignItems: 'center', height: '3rem', borderBottom: 'solid 1px lightgray' }}>
+                <div class="col-11">
+                  <span >タグ付加ファイル：{ getTagFile }</span>
+                  <span><a class="ms-2" href="#" role="button"><i class="bi bi-clipboard" title="クリップボードにコピー" onClick={ imgTagContentCopy_OnClicked }></i></a></span>
+                  <span><a class="ms-2" href="#" role="button"><i class="bi bi-download" title="ダウンロード" onClick={ imgTagContentDownload_OnClicked }></i></a></span>
+                </div>
+                <div class="col-1 text-end">
+                  <span>
+                    <a class="me-2" role="button" data-bs-toggle="collapse" href="#clpTagContent" aria-controls="clpTagContent" aria-expanded="false">
+                      { getTagContentOpen
+                        ? <i class="bi bi-chevron-double-up" title="閉じる" onClick={ imgTagContentOpen_OnClicked }></i>
+                        : <i class="bi bi-chevron-double-down" title="開く" onClick={ imgTagContentOpen_OnClicked }></i>
+                      }
+                    </a>
+                  </span>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col">
+                  <div class="collapse" id="clpTagContent">
+                    <div class="ms-1 me-1 bg-body-tertiary" style={{ whiteSpace: 'pre-wrap' }}>
+                      { getTagContent }
+                    </div>
+                  </div>                  
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        }
+
+      </div>
+    );
+  };
+
+  /********************************************************************************
+   * フッターコンポーネント
+   *
+   * @since 2024/11/19
+   * @author Kei Yusu
+   *
+   *********************************************************************************/
+  const Footer = () => {
+    // JSX作成
+    return (
+      <div class="row mt-4">
+        <div class="col text-end">
+          <p>2024 &copy; Auto Ruby Maker ver 1.0.0 Kei Yusu All Rights Reserved.</p>
+        </div>
+      </div>
+    );
+  };
+
+  /********************************************************************************
+   * アプリコンポーネント
+   *
+   * @since 2024/11/19
+   * @author Kei Yusu
+   *
+   *********************************************************************************/
+  const App = () => {
+    // JSX作成
+    return (
+      <div class="container shadow bg-body rounded mt-3 mb-3">
+        <header><Header/></header>
+        <main><Body/></main>
+        <footer><Footer/></footer>
+      </div>
+    );
+  };
+
+  //--------------------------------------------------------------------------------
+  // React設定
+  //--------------------------------------------------------------------------------
+  // コンテナ作成
+  const container = document.getElementById("root");
+
+  // 仮想DOM作成
+  const root = ReactDOM.createRoot(container);
+
+  // レンダリング
+  root.render(<App/>);
+
+  </script>
+</body>
+</html>
