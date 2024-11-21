@@ -29,7 +29,7 @@ https://kyusu0918.github.io/AutoRubyMaker/
 - **名前**: 柚須 佳
 - **メール**: kyusu0918@gmail.com
 - **X**: [Kei Yusu](https://twitter.com/kei_yusu)
-- **バージョン**: 1.0.0
+- **バージョン**: 1.0.1
 - **著作権**: © 2024 Kei Yusu All Rights Reserved.
 
 ## ライセンス
