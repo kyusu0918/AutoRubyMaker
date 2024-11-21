@@ -29,7 +29,6 @@ https://kyusu0918.github.io/AutoRubyMaker/
 - **名前**: 柚須 佳
 - **メール**: kyusu0918@gmail.com
 - **X**: [Kei Yusu](https://twitter.com/kei_yusu)
-- **バージョン**: 1.0.1
 - **著作権**: © 2024 Kei Yusu All Rights Reserved.
 
 ## ライセンス
@@ -72,3 +71,4 @@ https://kyusu0918.github.io/AutoRubyMaker/
 ## リリースノート
 - 2024/11/20 ver 1.0.0 初版リリース
 - 2024/11/21 ver 1.0.1 作成失敗時のアラート表示を追加
+- 2024/11/21 ver 1.0.2 ファイル名作成不具合を修正
