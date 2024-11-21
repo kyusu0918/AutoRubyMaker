@@ -126,51 +126,13 @@
         // シナリオファイルを保持
         setScenarioFile(file);
 
-        // ファイル名と拡張子を取得
-        const {fileName, fileExt} = getFileDetails(file.name);
-
-        // ルビファイル名保持
-        setRubyFile(fileName + "_ruby_store." + getRubyFileType);
-
-        // タグファイル名保持
-        setTagFile(fileName + "_ruby_tag." + fileExt);
-
       // シナリオファイルがない場合
       }else{
 
         // シナリオファイルをクリア
         setScenarioFile(undefined);
 
-        // ルビファイルをクリア
-        setRubyFile("");
-
-        // タグファイルをクリア
-        setTagFile("");
-
       }
-
-
-    }
-
-    /********************************************************************************
-     * ファイル名と拡張子を分割
-     *
-     * @param fileName ファイル名
-     * @returns {ファイル名, 拡張子}
-     * @since 2024/11/20
-     * @author Kei Yusu
-     *
-     *********************************************************************************/
-    const getFileDetails = (fileName) => {
-
-      // カンマで分割
-      const fileDetails = fileName.split(".");
-
-      // リバース
-      const reverseFileDetails = fileDetails.reverse();
-
-      // 戻り値の設定
-      return { "fileName": reverseFileDetails.slice(1), "fileExt": reverseFileDetails[0] };
 
     }
 
@@ -379,10 +341,19 @@
 
         // 各コンテンツの保持を初期化
         setScenarioContent("");
+        setRubyFile("");        
         setRubyContent("");
+        setTagFile("");
         setTagContent("");
         setKanjiNum(0);
         setRubyNum(0);
+
+        // 各ファイル名設定
+        const {rubyFile, tagFile} = makeFileNames(getScenarioFile.name);
+
+        // 各ファイル名保持
+        setRubyFile(rubyFile);
+        setTagFile(tagFile);
 
         // シナリオファイル読み込み
         const content = await readFile(getScenarioFile);
@@ -452,14 +423,16 @@
         
         // 各コンテンツの保持を初期化
         setScenarioContent("");
+        setRubyFile("");
         setRubyContent("");
+        setRubyContentOpen(false);
+        setTagFile("");
         setTagContent("");
+        setTagContentOpen(false);
         setKanjiNum(0);
         setRubyNum(0);
-        setRubyContentOpen(false);
-        setTagContentOpen(false);
 
-        console.log(e);
+        // console.log(e);
 
         // 戻り値の設定
         return { "retVal": false, "message": e.message };
@@ -468,6 +441,47 @@
 
       // 戻り値の設定
       return { "retVal": true, "message": "" };
+
+    }
+
+    /********************************************************************************
+     * 各ファイル名作成
+     *
+     * @param file シナリオファイル名
+     * @returns {ルビファイル名, タグ付加ファイル名}
+     * @since 2024/11/21
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+     const makeFileNames = (file) => {
+
+      // ファイル名と拡張子を取得
+      const {fileName, fileExt} = getFileDetails(file);
+
+      // 戻り値の設定
+      return {"rubyFile": fileName + "_ruby_store." + getRubyFileType, "tagFile": fileName + "_ruby_tag." + fileExt};
+
+    }
+
+    /********************************************************************************
+     * ファイル名と拡張子を分割
+     *
+     * @param fileName ファイル名
+     * @returns {ファイル名, 拡張子}
+     * @since 2024/11/20
+     * @author Kei Yusu
+     *
+     *********************************************************************************/
+    const getFileDetails = (fileName) => {
+
+      // カンマで分割
+      const fileDetails = fileName.split(".");
+
+      // リバース
+      const reverseFileDetails = fileDetails.reverse();
+
+      // 戻り値の設定
+      return { "fileName": reverseFileDetails.slice(1), "fileExt": reverseFileDetails[0] };
 
     }
 
@@ -609,7 +623,7 @@
           // 新規ルビ情報作成
           const newRuby = {"ruby": ruby, "text": text};
 
-          // // console.log("新規ルビ:", newRuby);
+          // console.log("新規ルビ:", newRuby);
 
           // 新規ルビ配列に追加
           newRubies.push(newRuby);
@@ -1132,7 +1146,7 @@
     return (
       <div class="row mt-4">
         <div class="col text-end">
-          <p>2024 &copy; Auto Ruby Maker ver 1.0.1 Kei Yusu All Rights Reserved.</p>
+          <p>2024 &copy; Auto Ruby Maker ver 1.0.2 Kei Yusu All Rights Reserved.</p>
         </div>
       </div>
     );
